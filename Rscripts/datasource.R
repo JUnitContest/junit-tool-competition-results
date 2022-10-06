@@ -11,9 +11,9 @@ getResults <- function(){
     r$year <- year
     results <- bind_rows(results, r)  
   }
+  results$tool <- as.factor(results$tool)
   return(results)
 }
-
 
 getToolsResults <- function(){
   results <- getResults() %>%
