@@ -1,5 +1,7 @@
 # JUnit Testing Tools Competition Results Dataset
 
+[![DOI](https://zenodo.org/badge/544734282.svg)](https://zenodo.org/badge/latestdoi/544734282)
+
 This repository contains the results of the past JUnit tool competitions since 2013.
 
 ## Structure
