@@ -1,9 +1,11 @@
 library(tidyverse)
 library(ggplot2)
+library(tsutils)
 
 source('Rscripts/datasource.R')
 
 COLOR_PALETTE = "RdYlBu" # Color blind friendly colors (http://colorbrewer2.org/)
+SIGNIFICANCE_LEVEL = 0.05
 
 results <- getToolsResults()
 
@@ -22,8 +24,7 @@ results %>%
     facet_grid(coverage ~ .)
 ggsave('plots/averages-coverage-per-year.pdf', width = 180, height = 150, units = 'mm')
 
-
-
+# Plotting EvoSuite and Randoop results
 results %>%
   filter(tool %in% c('evosuite', 'randoop')) %>%
   rename(instruction = avgcovi, branch = avgcovb, mutation = avgcovm) %>%
@@ -35,3 +36,33 @@ results %>%
     ylab("averaged coverage per class") +
     facet_grid(coverage ~ tool)
 ggsave('plots/coverages-per-year-evosuite-randoop.pdf', width = 200, height = 150, units = 'mm')
+
+
+# Compare Randoop and EvoSuite results
+results %>%
+  filter(tool %in% c('evosuite', 'randoop')) %>%
+  mutate(instruction = 1 - if_else(is.na(avgcovi), 0, avgcovi)) %>%
+  select(year, benchmark, budget, tool, instruction) %>%
+  pivot_wider(names_from = tool, values_from = instruction) %>%
+  select(-year, -benchmark, -budget) %>%
+  as.matrix() %>%
+  nemenyi(plottype = "vmcb", conf.level = 1.0 - SIGNIFICANCE_LEVEL)
+
+results %>%
+  filter(tool %in% c('evosuite', 'randoop')) %>%
+  mutate(branch = 1 - if_else(is.na(avgcovb), 0, avgcovb)) %>%
+  select(year, benchmark, budget, tool, branch) %>%
+  pivot_wider(names_from = tool, values_from = branch) %>%
+  select(-year, -benchmark, -budget) %>%
+  as.matrix() %>%
+  nemenyi(plottype = "vmcb", conf.level = 1.0 - SIGNIFICANCE_LEVEL)
+
+results %>%
+  filter(tool %in% c('evosuite', 'randoop')) %>%
+  mutate(mutation = 1 - if_else(is.na(avgcovm), 0, avgcovm)) %>%
+  select(year, benchmark, budget, tool, mutation) %>%
+  pivot_wider(names_from = tool, values_from = mutation) %>%
+  select(-year, -benchmark, -budget) %>%
+  as.matrix() %>%
+  nemenyi(plottype = "vmcb", conf.level = 1.0 - SIGNIFICANCE_LEVEL)
+  
